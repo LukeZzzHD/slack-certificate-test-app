@@ -1,0 +1,29 @@
+service: slack-certificate-test-app
+
+package:
+  individually: true
+  include:
+    - node_modules
+    - dist
+
+provider:
+  name: aws
+  region: eu-central-1
+  stage: ${opt:stage, 'dev'}
+  runtime: nodejs12.x
+  timeout: 30
+  environment:
+    STAGE: ${file(./config/config.${opt:stage, self:provider.stage, 'dev'}.json):STAGE}
+    - Effect: 'Allow'
+      Action:
+        - 'lambda:InvokeFunction'
+      Resource: '*'
+
+functions:
+  slackevent:
+    timeout: 30
+    handler: dist/handler.hander
+    events:
+      - http:
+          method: post
+          path: slackevent
